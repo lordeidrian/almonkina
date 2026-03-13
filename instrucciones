@@ -1,0 +1,49 @@
+Sí. Revisé tu repo y, con lo que ya tienes en README.md, .env.example, netlify.toml, supabase/migrations/001_init.sql y supabase/migrations/002_admin_panel.sql, la configuración base ya está bastante completa. Te guío paso a paso:
+
+Supabase
+
+Crea un proyecto en Supabase.
+Ve a Project Settings > API y copia:
+Project URL -> NEXT_PUBLIC_SUPABASE_URL
+anon public key -> NEXT_PUBLIC_SUPABASE_ANON_KEY
+service_role key -> SUPABASE_SERVICE_ROLE_KEY
+En local, crea tu archivo:
+cp .env.example .env.local
+Completa /.env.local con:
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_DEFAULT_CURRENCY=PYG
+ENABLE_LEAD_CAPTURE=true
+En Supabase, abre el SQL Editor y ejecuta en este orden:
+supabase/migrations/001_init.sql
+supabase/migrations/002_admin_panel.sql
+supabase/seed.sql
+Para el admin:
+Crea un usuario en Authentication > Users con email/password.
+Luego ejecuta este SQL cambiando el UUID:
+insert into public.admin_users (user_id, is_active)
+values ('UUID_DEL_USUARIO_AUTH', true)
+on conflict (user_id) do update set is_active = excluded.is_active;
+Levanta la app:
+npm run dev
+y prueba /admin/login.
+Nota importante: tu migración 002_admin_panel.sql ya crea los buckets branding y products, además de las policies de Storage, así que no deberías crearlos manualmente.
+
+Netlify
+
+Sube el repo a GitHub/GitLab/Bitbucket.
+En Netlify, crea un sitio conectando ese repo.
+El proyecto ya trae netlify.toml con:
+build command: npm run build
+plugin Next.js
+En Site configuration > Environment variables, agrega las mismas variables que usas en .env.local, pero cambia:
+NEXT_PUBLIC_SITE_URL=https://tu-sitio.netlify.app
+Haz deploy.
+Checklist rápido
+
+Si falla el login admin, casi siempre es porque el usuario existe en Auth pero no en admin_users.
+Si fallan imágenes/subidas, revisa que hayas ejecutado 002_admin_panel.sql.
+Si en Netlify falla auth o redirects, revisa que NEXT_PUBLIC_SITE_URL tenga la URL pública real.
+Si quieres, en el siguiente mensaje te puedo dejar un “paso a paso exacto” para hacer primero Supabase contigo, pantalla por pantalla.
