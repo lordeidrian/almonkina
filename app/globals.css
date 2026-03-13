@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-primary: #111827;
+  --brand-secondary: #2563eb;
+  --brand-tertiary: #14b8a6;
+  --brand-bg: #f8fafc;
+  --brand-text: #0f172a;
+}
+
+@layer base {
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 15% -10%, color-mix(in oklab, var(--brand-secondary), white 88%), transparent 35%),
+      radial-gradient(circle at 100% 0%, color-mix(in oklab, var(--brand-tertiary), white 90%), transparent 28%),
+      linear-gradient(180deg, #ffffff, var(--brand-bg));
+    color: var(--brand-text);
+    text-rendering: geometricPrecision;
+  }
+}
+
+@layer components {
+  .surface {
+    @apply rounded-2xl border border-slate-200/80 bg-white/95 shadow-sm;
+  }
+
+  .input-base {
+    @apply h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-[var(--brand-secondary)] focus:ring-2 focus:ring-blue-100;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-[var(--brand-primary)] px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50;
+  }
+
+  .badge-soft {
+    @apply inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600;
+  }
+}
