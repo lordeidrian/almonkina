@@ -77,6 +77,20 @@ on conflict (user_id) do update set is_active = excluded.is_active;
 
 ## Deploy en Netlify
 
-- Conectar repositorio en Netlify
-- Configurar las mismas variables de entorno
-- Se usa `@netlify/plugin-nextjs` vía `netlify.toml`
+1. Conecta el repositorio en Netlify.
+2. Verifica que Netlify use el archivo `netlify.toml` del repo y el preset de framework **Next.js**:
+   - Build command: `npm run build`
+   - Framework preset: **Next.js** (Netlify lo detecta automáticamente)
+   - Node version: `20`
+3. En **Site configuration > Environment variables**, agrega:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `NEXT_PUBLIC_DEFAULT_CURRENCY=PYG`
+   - `ENABLE_LEAD_CAPTURE=true` (opcional)
+   - `NEXT_PUBLIC_SITE_URL=https://TU-SITIO.netlify.app` (URL pública, **no** localhost)
+4. Reintenta el deploy y revisa el log de **Deploys > Deploy log**.
+
+Si `NEXT_PUBLIC_SITE_URL` apunta a `http://localhost:3000`, en producción puede romper redirecciones/enlaces porque esa URL no existe en Netlify.
+
+> Nota: en las versiones actuales de Netlify/Next.js ya no hace falta declarar `@netlify/plugin-nextjs` manualmente en `netlify.toml`; Netlify aplica la integración de Next.js automáticamente cuando detecta el framework.
