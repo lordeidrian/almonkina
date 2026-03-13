@@ -21,19 +21,28 @@ export function CartView({ settings, captureLeadEnabled }: CartViewProps) {
 
   const [isSending, setIsSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
 
   const hasItems = items.length > 0;
+  const cleanPhone = customerPhone.replace(/\s+/g, " ").trim();
+  const cleanName = customerName.replace(/\s+/g, " ").trim();
+  const isValidPhone = /^\+?[\d\s()-]{6,30}$/.test(cleanPhone);
+  const canSend = hasItems && cleanName.length >= 2 && isValidPhone;
 
   const message = useMemo(
     () =>
       buildOrderMessage({
         businessName: settings.business_name,
         template: settings.order_message_template,
+        customerName: cleanName,
+        customerPhone: cleanPhone,
         items,
         subtotal,
         currencyCode: settings.currency_code
       }),
-    [items, settings.business_name, settings.currency_code, settings.order_message_template, subtotal]
+    [cleanName, cleanPhone, items, settings.business_name, settings.currency_code, settings.order_message_template, subtotal]
   );
 
   const handleWhatsApp = async () => {
@@ -41,6 +50,17 @@ export function CartView({ settings, captureLeadEnabled }: CartViewProps) {
       return;
     }
 
+    if (!cleanName || cleanName.length < 2) {
+      setFormError("Completa tu nombre para continuar.");
+      return;
+    }
+
+    if (!isValidPhone) {
+      setFormError("Ingresa un numero de telefono valido.");
+      return;
+    }
+
+    setFormError(null);
     setIsSending(true);
 
     if (captureLeadEnabled) {
@@ -48,6 +68,8 @@ export function CartView({ settings, captureLeadEnabled }: CartViewProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          customer_name: cleanName,
+          customer_phone: cleanPhone,
           items_json: items,
           total_estimated: subtotal,
           status: "pending_whatsapp"
@@ -105,10 +127,56 @@ export function CartView({ settings, captureLeadEnabled }: CartViewProps) {
         <h2 className="text-lg font-semibold text-slate-900">Resumen</h2>
         <p className="mt-2 text-sm text-slate-500">{items.length} producto(s) en el carrito</p>
 
+        <div className="mt-4 space-y-3">
+          <label className="block space-y-1">
+            <span className="text-sm font-medium text-slate-700">Nombre completo</span>
+            <input
+              type="text"
+              value={customerName}
+              onChange={(event) => {
+                setCustomerName(event.target.value);
+                if (formError) {
+                  setFormError(null);
+                }
+                if (sent) {
+                  setSent(false);
+                }
+              }}
+              placeholder="Ej: Juan Perez"
+              className="input-base"
+              required
+            />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-sm font-medium text-slate-700">Numero de telefono</span>
+            <input
+              type="tel"
+              value={customerPhone}
+              onChange={(event) => {
+                setCustomerPhone(event.target.value);
+                if (formError) {
+                  setFormError(null);
+                }
+                if (sent) {
+                  setSent(false);
+                }
+              }}
+              placeholder="Ej: 595981000000"
+              className="input-base"
+              required
+            />
+          </label>
+        </div>
+
         <p className="mt-5 text-xl font-bold text-brand-primary">{formatMoney(subtotal, settings.currency_code)}</p>
 
         <div className="mt-5 space-y-2">
-          <button type="button" onClick={handleWhatsApp} disabled={isSending} className="btn-primary w-full bg-green-600 hover:bg-green-700 disabled:opacity-60">
+          <button
+            type="button"
+            onClick={handleWhatsApp}
+            disabled={isSending || !canSend}
+            className="btn-primary w-full bg-green-600 hover:bg-green-700 disabled:opacity-60"
+          >
             {isSending ? "Procesando..." : "Hacer pedido por WhatsApp"}
           </button>
 
@@ -117,6 +185,7 @@ export function CartView({ settings, captureLeadEnabled }: CartViewProps) {
           </button>
         </div>
 
+        {formError ? <p className="mt-3 text-xs font-medium text-red-600">{formError}</p> : null}
         {sent ? <p className="mt-3 text-xs font-medium text-emerald-700">Mensaje listo. Se abrió WhatsApp en una nueva pestaña.</p> : null}
       </aside>
     </section>

@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import "@/app/globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { getPublicSettings } from "@/lib/queries/public";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -30,8 +31,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html lang="es">
       <body style={style}>
         <Header businessName={settings.business_name} logoUrl={settings.logo_url} />
-        <main className="mx-auto min-h-[70vh] max-w-6xl px-4 py-8">{children}</main>
+        <main className="mx-auto min-h-[70vh] max-w-6xl px-4 py-8 pb-28 md:pb-8">{children}</main>
         <Footer />
+        <MobileBottomNav />
       </body>
     </html>
   );

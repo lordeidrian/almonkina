@@ -3,6 +3,8 @@ import type { CartItem } from "@/types/domain";
 export function buildOrderMessage(input: {
   businessName: string;
   template: string;
+  customerName?: string;
+  customerPhone?: string;
   items: CartItem[];
   subtotal: number;
   currencyCode: string;
@@ -14,12 +16,16 @@ export function buildOrderMessage(input: {
 
   return [
     input.template,
+    input.customerName ? `Cliente: ${input.customerName}` : null,
+    input.customerPhone ? `Telefono: ${input.customerPhone}` : null,
     "",
     ...lines,
     "",
     `Subtotal: ${formatMoney(input.subtotal, input.currencyCode)}`,
     `Tienda: ${input.businessName}`
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 export function buildWhatsAppUrl(phone: string, message: string): string {
