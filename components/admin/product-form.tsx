@@ -1,3 +1,7 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
 import { createProductAction, updateProductAction } from "@/lib/admin/actions";
 
 type CategoryOption = {
@@ -26,23 +30,59 @@ type ProductFormProps = {
   mode: "create" | "edit";
   categories: CategoryOption[];
   product?: ProductLike;
+  cancelHref?: string;
 };
 
-export function ProductForm({ mode, categories, product }: ProductFormProps) {
+export function ProductForm({ mode, categories, product, cancelHref = "/admin/products" }: ProductFormProps) {
   const defaultCategory = product?.product_categories?.[0]?.category_id ?? categories[0]?.id ?? "";
   const action = mode === "create" ? createProductAction : updateProductAction.bind(null, product?.id ?? "");
+
+  const [slug, setSlug] = useState(product?.slug ?? "");
+  const [isSlugEdited, setIsSlugEdited] = useState(!!product?.slug && mode === "edit");
+
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Limpiar acentos
+      .replace(/[^a-z0-9]+/g, "-") // Reemplazar caracteres no alfanuméricos con guiones
+      .replace(/^-+|-+$/g, ""); // Eliminar guiones al inicio o final
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isSlugEdited) {
+      setSlug(generateSlug(e.target.value));
+    }
+  };
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSlug(e.target.value);
+    setIsSlugEdited(true);
+  };
 
   return (
     <form action={action} className="surface space-y-5 p-6">
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-1">
           <span className="text-sm font-medium">Nombre</span>
-          <input name="name" required defaultValue={product?.name ?? ""} className="input-base" />
+          <input 
+            name="name" 
+            required 
+            defaultValue={product?.name ?? ""} 
+            onChange={handleNameChange}
+            className="input-base" 
+          />
         </label>
 
         <label className="space-y-1">
           <span className="text-sm font-medium">Slug</span>
-          <input name="slug" required defaultValue={product?.slug ?? ""} className="input-base" />
+          <input 
+            name="slug" 
+            required 
+            value={slug} 
+            onChange={handleSlugChange}
+            className="input-base" 
+          />
         </label>
       </div>
 
@@ -112,9 +152,14 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
         </label>
       </div>
 
-      <button type="submit" className="btn-primary">
-        {mode === "create" ? "Crear producto" : "Guardar cambios"}
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="submit" className="btn-primary">
+          {mode === "create" ? "Crear producto" : "Guardar cambios"}
+        </button>
+        <Link href={cancelHref} className="btn-secondary">
+          Cancelar
+        </Link>
+      </div>
     </form>
   );
 }

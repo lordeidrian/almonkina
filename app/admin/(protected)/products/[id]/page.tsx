@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/admin/product-form";
 import { getAdminCategories, getAdminProductById } from "@/lib/queries/admin";
@@ -18,6 +19,9 @@ export default async function AdminEditProductPage({ params, searchParams }: Adm
 
   return (
     <div className="space-y-5">
+      <Link href="/admin/products" className="btn-secondary inline-flex">
+        Volver a productos
+      </Link>
       <h1 className="text-3xl font-bold tracking-tight text-slate-900">Editar producto</h1>
       {query.saved ? (
         <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">Producto actualizado.</p>
